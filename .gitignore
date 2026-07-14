@@ -1,0 +1,35 @@
+# Secrets and local config
+.env
+.env.*
+!.env.example
+
+# Runtime output
+logs/
+*.log
+*.err.log
+*.pid
+.server-*.pid
+
+# Databases and local backups
+*.sqlite
+*.sqlite-*
+*.db
+work/
+
+# Dependencies and package managers
+node_modules/
+.npm/
+.pnpm-store/
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Build/cache output
+dist/
+build/
+coverage/
+.cache/
+tmp/
+temp/

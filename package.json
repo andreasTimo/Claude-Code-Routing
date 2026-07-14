@@ -1,0 +1,13 @@
+{
+  "name": "anthropic-fallback-proxy",
+  "version": "1.0.0",
+  "description": "A tiny Anthropic-compatible fallback proxy for Claude Code.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

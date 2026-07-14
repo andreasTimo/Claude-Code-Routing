@@ -9,12 +9,24 @@ logs/
 *.err.log
 *.pid
 .server-*.pid
+__pycache__/
+*.pyc
 
 # Databases and local backups
 *.sqlite
 *.sqlite-*
 *.db
 work/
+
+# Local generated proxy/account data
+socks5.txt
+proxy.txt
+good_proxy.txt
+used_proxy.txt
+email_list.txt
+.proxifly_cursor.json
+client_secret.json
+gmail_tokens.json
 
 # Dependencies and package managers
 node_modules/

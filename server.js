@@ -108,6 +108,12 @@ if (providers.length === 0) {
 }
 
 function json(res, statusCode, data) {
+  if (res.destroyed || res.writableEnded) return;
+  if (res.headersSent) {
+    res.destroy();
+    return;
+  }
+
   res.writeHead(statusCode, {
     "content-type": "application/json; charset=utf-8",
     "cache-control": "no-store"
@@ -151,6 +157,29 @@ function prepareUpstreamBody(req, body) {
   } catch {
     return body;
   }
+}
+
+function prepareProviderBody(provider, req, body) {
+  if (body.length === 0 || req.method === "GET" || req.method === "HEAD") return body;
+
+  const contentType = String(req.headers["content-type"] || "");
+  if (!contentType.includes("application/json")) return body;
+
+  try {
+    const payload = JSON.parse(body.toString("utf8"));
+
+    if (
+      provider.name === "9router-for-claude" &&
+      payload.model === "claude-opus-4-8"
+    ) {
+      payload.model = "for-claude";
+      return Buffer.from(JSON.stringify(payload));
+    }
+  } catch {
+    return body;
+  }
+
+  return body;
 }
 
 function buildUpstreamHeaders(req, provider) {
@@ -326,10 +355,11 @@ function isStreamRequest(req, body) {
 
 async function proxyToProvider(req, provider, body, signal) {
   const upstreamUrl = new URL(req.url || "/", provider.baseUrl);
+  const providerBody = prepareProviderBody(provider, req, body);
   return await fetch(upstreamUrl, {
     method: req.method,
     headers: buildUpstreamHeaders(req, provider),
-    body: body.length > 0 && req.method !== "GET" && req.method !== "HEAD" ? body : undefined,
+    body: providerBody.length > 0 && req.method !== "GET" && req.method !== "HEAD" ? providerBody : undefined,
     signal
   });
 }
@@ -673,6 +703,11 @@ const server = http.createServer(async (req, res) => {
 
     await handleProxy(req, res);
   } catch (error) {
+    if (res.headersSent || res.destroyed || res.writableEnded) {
+      if (!res.destroyed && !res.writableEnded) res.destroy();
+      return;
+    }
+
     json(res, 500, {
       error: {
         type: "proxy_error",
